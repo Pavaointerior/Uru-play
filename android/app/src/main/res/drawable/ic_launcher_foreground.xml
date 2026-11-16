@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- argola -->
+    <path
+        android:pathData="M28,54 A26,26 0 0,1 80,54"
+        android:strokeColor="#9C9484"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M80,54 A26,26 0 0,1 28,54"
+        android:strokeColor="#9C9484"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+
+    <!-- play -->
+    <path
+        android:pathData="M47,40 L47,68 L71,54 Z"
+        android:fillColor="#E8922E" />
+</vector>
