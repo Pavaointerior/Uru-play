@@ -2,45 +2,58 @@
 
 App do Urutau Studios (player de música), empacotado como APK Android.
 
-## Estado: Fase 0
+## Estado: Fase 1
 
-O que já funciona:
+Funciona:
 
-- projeto Android nativo (WebView) montado à mão, sem Capacitor e sem npm;
-- GitHub Actions gera o APK a cada `push` na `main`;
-- o APK instala e abre a tela de teste.
+- busca no YouTube (música e "outros vídeos");
+- descobertas: da biblioteca, novidades dos artistas, em alta, temas;
+- curtir, descurtir, playlists — tudo guardado no próprio aparelho;
+- player pelo YouTube (vídeo do topo, capa, título, barra de progresso);
+- botão voltar do Android funciona tela por tela.
 
-O que **ainda não** existe (vem nas próximas fases):
+Ainda não existe:
 
-- o app de verdade (fase 1);
-- download de música para ouvir offline (fase 2);
-- ícone definitivo, splash, release assinado (fase 3).
+- **download para ouvir offline** (fase 2) — por enquanto, ao tocar uma
+  curtida, o áudio local não existe e o app toca pelo YouTube;
+- release assinado e ícone definitivo (fase 3).
 
-## Como gerar o APK
+## A chave do YouTube
+
+Na primeira busca o app pede a chave da API do YouTube (Google Cloud).
+Ela fica guardada só no aparelho, em `localStorage`. Para trocar:
+abra o console da WebView e rode `uruTrocarChave()`.
+
+## Gerar o APK
 
 ```bash
 cd ~/Uru-play
 git add -A
-git commit -m "fase 0"
+git commit -m "fase 1"
 git push
 ```
 
-Depois, no GitHub: **Actions → APK → run mais recente → Artifacts → uru-play-debug**.
+GitHub → **Actions → APK → Artifacts → uru-play-debug**.
 
 ## Estrutura
 
 ```
-web/                 a interface (hoje só a tela de teste)
+web/                 a interface (index + api.js + 6 módulos)
 android/             o projeto Android
-  app/src/main/
-    java/.../MainActivity.java   WebView + leitura dos arquivos locais
-    assets/www/                  cópia de web/ (gerada no build)
-.github/workflows/android.yml    a "esteira" que monta o APK
+  app/src/main/java/.../MainActivity.java   WebView, diálogos, voltar
+  app/src/main/assets/www/                   cópia de web/ (gerada no build)
+.github/workflows/android.yml                a esteira que monta o APK
 publicar.sh          script que inicializa e envia pro GitHub
 ```
 
-## Por que não Capacitor
+## Como o servidor.py foi substituído
 
-O Capacitor geraria a mesma coisa (WebView), mas exige npm no Termux e um
-template que varia de versão. O projeto nativo faz o mesmo trabalho com
-menos peças e o build fica 100% no GitHub.
+| antes (servidor.py) | agora (api.js) |
+|---|---|
+| `/buscar` | chamada direta à API do YouTube |
+| `/descobertas` | chamada direta (+ cache de 12 h) |
+| `/biblioteca` | `localStorage` |
+| `dados.json` | importado uma vez do pacote |
+| `yt-dlp` | fase 2 |
+
+`api.js` intercepta as rotas antigas: os 6 módulos continuam iguais.

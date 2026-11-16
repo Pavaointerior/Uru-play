@@ -1,0 +1,85 @@
+{
+ "curtidas": [
+  {
+   "id": "ER_aDVVBvi8",
+   "titulo": "Ayahuasca me mostrou - Fernando Beltran - CD Soluar",
+   "canal": "Denise Beltran",
+   "miniatura": "https://i.ytimg.com/vi/ER_aDVVBvi8/mqdefault.jpg",
+   "estado": "pronto",
+   "canalId": "UCmtezVXn8FtcG0Y976_II_Q",
+   "tocada_em": 1794842976.9244819
+  },
+  {
+   "id": "Igid_8pyH7w",
+   "titulo": "Três Talismãs",
+   "canal": "paua - Topic",
+   "miniatura": "https://i.ytimg.com/vi/Igid_8pyH7w/mqdefault.jpg",
+   "estado": "pronto",
+   "canalId": "UCNjVVantfcbY8_KKAWJpbcA",
+   "tocada_em": 1794842983.3174613
+  },
+  {
+   "id": "RJy7XtZNUv0",
+   "titulo": "Seja Livre para Ser",
+   "canal": "paua - Topic",
+   "miniatura": "https://i.ytimg.com/vi/RJy7XtZNUv0/mqdefault.jpg",
+   "estado": "pronto",
+   "canalId": "UCNjVVantfcbY8_KKAWJpbcA",
+   "tocada_em": 1794842982.2867186
+  },
+  {
+   "id": "JqZRqHFoJe8",
+   "titulo": "Sonhei com a Paz",
+   "canal": "paua - Topic",
+   "miniatura": "https://i.ytimg.com/vi/JqZRqHFoJe8/mqdefault.jpg",
+   "estado": "pronto",
+   "canalId": "UCNjVVantfcbY8_KKAWJpbcA"
+  },
+  {
+   "id": "OnNIqdGXET8",
+   "titulo": "Deste Lugar - Fernando Beltran - CD Soluar",
+   "canal": "Denise Beltran",
+   "miniatura": "https://i.ytimg.com/vi/OnNIqdGXET8/mqdefault.jpg",
+   "estado": "pronto",
+   "canalId": "UCmtezVXn8FtcG0Y976_II_Q"
+  },
+  {
+   "id": "5DZgEaOPPnc",
+   "titulo": "Manso Despertar",
+   "canal": "Roda de enCantos",
+   "miniatura": "https://i.ytimg.com/vi/5DZgEaOPPnc/mqdefault.jpg",
+   "estado": "pronto",
+   "canalId": "UCzEJhS9kxWhGheViNYyIEEA",
+   "tocada_em": 1794844068.4099905
+  },
+  {
+   "id": "YnjnTFXSwoE",
+   "titulo": "Espírito da Floresta",
+   "canal": "paua - Topic",
+   "miniatura": "https://i.ytimg.com/vi/YnjnTFXSwoE/mqdefault.jpg",
+   "estado": "pronto",
+   "canalId": "UCNjVVantfcbY8_KKAWJpbcA",
+   "tocada_em": 1794844687.1779237
+  },
+  {
+   "id": "WMrqirURl40",
+   "titulo": "Sob O Sol",
+   "canal": "Marcus Viana - Topic",
+   "miniatura": "https://i.ytimg.com/vi/WMrqirURl40/mqdefault.jpg",
+   "estado": "pronto",
+   "canalId": "UCc2Js7AroJaOPi0TjnwTKGQ",
+   "tocada_em": 1794844503.1258986
+  }
+ ],
+ "playlists": [
+  {
+   "nome": "Músicas",
+   "ids": [
+    "ER_aDVVBvi8",
+    "Igid_8pyH7w",
+    "RJy7XtZNUv0",
+    "JqZRqHFoJe8"
+   ]
+  }
+ ]
+}
