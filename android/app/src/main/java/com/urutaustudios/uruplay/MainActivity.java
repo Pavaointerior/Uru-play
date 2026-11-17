@@ -49,6 +49,15 @@ public class MainActivity extends Activity {
         cfg.setAllowFileAccess(false);
         cfg.setAllowContentAccess(false);
 
+        // Sem estas três, o WebView ignora o <meta viewport> e usa uma
+        // largura fixa (~980px), esticando tudo para caber na tela.
+        cfg.setUseWideViewPort(true);
+        cfg.setLoadWithOverviewMode(true);
+        cfg.setSupportZoom(false);
+        cfg.setBuiltInZoomControls(false);
+        cfg.setDisplayZoomControls(false);
+        cfg.setTextZoom(100);
+
         setContentView(web);
 
         final WebViewAssetLoader carregador = new WebViewAssetLoader.Builder()
