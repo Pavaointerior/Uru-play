@@ -152,7 +152,6 @@ function abrirDescobertas() {
   if (g2Iniciado) return;
   g2Iniciado = true;
   g2Fileira('g2-novidades', function (t) { return g2Pedir('novidades', t); });
-  g2Fileira('g2-alta', function (t) { return g2Pedir('alta', t); });
   g2Pilulas();
   g2Fileira('g2-descobertas', function (t) { return g2Pedir('descobertas', t); });
 }

@@ -224,12 +224,14 @@
           miniatura: String(a.miniatura || '').slice(0, 300),
           canalId: String(a.canalId || '').slice(0, 40),
           curtida_em: Date.now() / 1000,
-          estado: 'pronto'
+          estado: window.UruNativo ? 'baixando' : 'pronto'
         });
+        if (window.UruNativo) { try { UruNativo.baixar(vid); } catch (e) {} }
       }
     } else if (a.acao === 'tocou' && achada) {
       achada.tocada_em = Date.now() / 1000;
     } else if (a.acao === 'descurtir' && achada) {
+      if (window.UruNativo) { try { UruNativo.apagar(vid); } catch (e) {} }
       d.curtidas = d.curtidas.filter(function (m) { return m.id !== vid; });
       d.playlists.forEach(function (p) {
         p.ids = p.ids.filter(function (x) { return x !== vid; });
@@ -252,6 +254,32 @@
     return gravarBib(d);
   }
 
+  /* Confere a biblioteca com os arquivos que existem no aparelho.
+     Curtida sem arquivo entra na fila de download (uma vez só). */
+  function sincronizar(d) {
+    if (!window.UruNativo) return d;
+    var tem = [];
+    try { tem = JSON.parse(UruNativo.listar()); } catch (e) {}
+    var mudou = false;
+    d.curtidas.forEach(function (m) {
+      var existe = tem.indexOf(m.id) >= 0;
+      if (existe && m.estado !== 'pronto') { m.estado = 'pronto'; mudou = true; }
+      else if (!existe && m.estado !== 'erro') {
+        if (m.estado !== 'baixando') { m.estado = 'baixando'; mudou = true; }
+        try { UruNativo.baixar(m.id); } catch (e) {}
+      }
+    });
+    return mudou ? gravarBib(d) : d;
+  }
+
+  /* O app chama isto quando um download termina. */
+  window.uruBaixou = function (id, ok) {
+    var d = lerBib();
+    d.curtidas.forEach(function (m) { if (m.id === id) m.estado = ok ? 'pronto' : 'erro'; });
+    gravarBib(d);
+    if (window.bibCarregar) bibCarregar();
+  };
+
   function resp(p) {
     return Promise.resolve(p).then(function (d) {
       return { ok: true, json: function () { return Promise.resolve(d); } };
@@ -271,7 +299,7 @@
         try { corpo = JSON.parse((init && init.body) || '{}'); } catch (e) {}
         return resp(aplicarBiblioteca(corpo));
       }
-      return resp(migrar());
+      return resp(migrar().then(sincronizar));
     }
     if (url.indexOf('/buscar?') === 0 || url.indexOf('buscar?') === 0) {
       var q1 = new URLSearchParams(url.split('?')[1]);

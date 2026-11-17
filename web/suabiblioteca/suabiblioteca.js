@@ -2,7 +2,7 @@ var bibDados = { curtidas: [], playlists: [] };
 var bibAba = 'curtidas', bibAberta = null;
 
 function bibAchar(id) { return bibDados.curtidas.filter(function (m) { return m.id === id; })[0]; }
-function bibCapa(m) { return m.estado === 'pronto' ? '/suabiblioteca/acervo/' + m.id + '.jpg' : m.miniatura; }
+function bibCapa(m) { return m.miniatura; }
 
 function bibApi(corpo) {
   return fetch('/biblioteca', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) })
@@ -142,11 +142,10 @@ function bibDesenhar() {
 function bibTocar(ids, pos) {
   var m = bibAchar(ids[pos]);
   if (!m) return;
-  if (m.estado === 'baixando') { alert('Ainda baixando. Aguarde um instante.'); return; }
-  if (m.estado === 'erro') { alert('O download falhou. Descurte e curta de novo para tentar outra vez.'); return; }
-  var prontos = ids.map(bibAchar).filter(function (x) { return x && x.estado === 'pronto'; });
+  // Sem arquivo ainda? O player cai sozinho para o YouTube (ver player.js).
+  var prontos = ids.map(bibAchar).filter(function (x) { return !!x; });
   var lista = prontos.map(function (x) {
-    return { id: x.id, titulo: x.titulo, miniatura: x.miniatura, capa: bibCapa(x), audio: '/suabiblioteca/acervo/' + x.id + '.m4a' };
+    return { id: x.id, titulo: x.titulo, miniatura: x.miniatura, capa: bibCapa(x), audio: '/acervo/' + x.id + '.m4a' };
   });
   tocarLocal(lista, prontos.indexOf(m));
 }
