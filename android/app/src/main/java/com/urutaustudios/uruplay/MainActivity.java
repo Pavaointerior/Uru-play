@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 /**
@@ -63,6 +64,8 @@ public class MainActivity extends Activity {
     private final Set<String> pendentes = new HashSet<>();
     private volatile boolean ytPronto = false;
     private volatile String erroInit = "";
+    private final AtomicBoolean atualizando = new AtomicBoolean(false);
+    private volatile String statusUpdate = "";
 
     @Override
     protected void onCreate(Bundle estado) {
@@ -206,6 +209,50 @@ public class MainActivity extends Activity {
                 new ByteArrayInputStream(new byte[0]));
     }
 
+    /** Atualiza o yt-dlp (uma vez por abertura do app, antes do primeiro download). */
+    private void atualizarYt() {
+        if (!ytPronto) { statusUpdate = "yt-dlp não iniciou"; return; }
+        try {
+            YoutubeDL yt = YoutubeDL.getInstance();
+            java.lang.reflect.Method escolhido = null;
+            for (java.lang.reflect.Method m : yt.getClass().getMethods()) {
+                if (!m.getName().equals("updateYoutubeDL")) continue;
+                if (escolhido == null || m.getParameterTypes().length < escolhido.getParameterTypes().length) escolhido = m;
+            }
+            if (escolhido == null) { statusUpdate = "updateYoutubeDL não existe nesta versão"; return; }
+            Class<?>[] t = escolhido.getParameterTypes();
+            Object[] args = new Object[t.length];
+            args[0] = getApplication();
+            for (int i = 1; i < t.length; i++) args[i] = canalEstavel(t[i]);
+            statusUpdate = "ok " + escolhido.invoke(yt, args);
+        } catch (Throwable e) {
+            Throwable c = e.getCause() != null ? e.getCause() : e;
+            statusUpdate = "falhou " + c;
+            Log.e(TAG, "atualização do yt-dlp falhou", e);
+        }
+    }
+
+    private Object canalEstavel(Class<?> tipo) {
+        for (String nome : new String[] { "_STABLE", "STABLE" }) {
+            try { return tipo.getField(nome).get(null); } catch (Throwable ignorado) { }
+        }
+        if (tipo.isEnum()) {
+            for (Object o : tipo.getEnumConstants()) if (o.toString().equals("STABLE")) return o;
+        }
+        return null;
+    }
+
+    /** Fica com as linhas "ERROR" (o motivo real); sem elas, com o final do texto. */
+    private static String resumir(String s) {
+        if (s == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (String l : s.split("\n")) {
+            if (l.contains("ERROR")) sb.append(l.trim()).append(' ');
+        }
+        String r = sb.length() > 0 ? sb.toString() : s;
+        return r.length() > 600 ? r.substring(r.length() - 600) : r;
+    }
+
     private void baixarAgora(String id) {
         boolean ok = false;
         String erro = "";
@@ -227,10 +274,11 @@ public class MainActivity extends Activity {
                 erro = "yt-dlp não iniciou: " + erroInit;
             }
         } catch (Exception e) {
-            erro = String.valueOf(e.getMessage());
+            erro = resumir(String.valueOf(e.getMessage()));
             Log.e(TAG, "download falhou: " + id, e);
         }
-        if (erro.length() > 500) erro = erro.substring(0, 500);
+        if (!ok && !statusUpdate.isEmpty()) erro = erro + " | atualização: " + statusUpdate;
+        if (erro.length() > 800) erro = erro.substring(0, 800);
         synchronized (pendentes) {
             pendentes.remove(id);
         }
@@ -262,6 +310,7 @@ public class MainActivity extends Activity {
                 if (!pendentes.add(id)) return;
             }
             final String vid = id;
+            if (atualizando.compareAndSet(false, true)) fila.execute(() -> atualizarYt());
             fila.execute(() -> baixarAgora(vid));
         }
 

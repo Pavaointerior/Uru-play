@@ -5,7 +5,14 @@ function bibAchar(id) { return bibDados.curtidas.filter(function (m) { return m.
 function bibCapa(m) { return m.miniatura; }
 
 var uruOff = {};      // ids que ja existem no aparelho
-var uruLote = null;   // download em andamento: {total, feitos, erros, msg}
+var uruLote = null;   // lote do botao: {total, feitos, erros, msg, ids}
+var uruCurso = {};    // ids baixando agora (curtir baixa sozinho)
+
+window.uruAoCurtir = function (id) {
+  if (!window.UruNativo) return;
+  uruCurso[id] = 1;
+  try { UruNativo.baixar(id); } catch (e) { delete uruCurso[id]; }
+};
 
 function uruAtualizarOff() {
   uruOff = {};
@@ -29,14 +36,15 @@ function uruBaixarTudo() {
   var falta = uruFaltam();
   if (!falta.length) { alert('Todas as curtidas já estão offline.'); return; }
   if (!confirm('Baixar ' + falta.length + ' música(s) para ouvir offline? Usa internet e espaço no aparelho. Mantenha o app aberto.')) return;
-  uruLote = { total: falta.length, feitos: 0, erros: 0, msg: '' };
-  falta.forEach(function (m) { try { UruNativo.baixar(m.id); } catch (e) {} });
+  uruLote = { total: falta.length, feitos: 0, erros: 0, msg: '', ids: {} };
+  falta.forEach(function (m) { uruLote.ids[m.id] = 1; uruCurso[m.id] = 1; try { UruNativo.baixar(m.id); } catch (e) {} });
   uruRotulo();
 }
 /* O app chama isto quando termina cada download. */
 window.uruBaixou = function (id, ok, msg) {
   if (ok) uruOff[id] = 1;
-  if (uruLote) {
+  delete uruCurso[id];
+  if (uruLote && uruLote.ids[id]) {
     uruLote.feitos++;
     if (!ok) { uruLote.erros++; if (!uruLote.msg) uruLote.msg = msg || ''; }
     if (uruLote.feitos >= uruLote.total) {
@@ -87,7 +95,7 @@ function bibItem(m, aoClicar, acoes) {
   t.textContent = m.titulo;
   var c = document.createElement('div');
   c.className = 'grade1-canal';
-  c.textContent = m.canal + (uruOff[m.id] ? ' · offline' : '');
+  c.textContent = m.canal + (uruOff[m.id] ? ' · offline' : uruCurso[m.id] ? ' · baixando...' : '');
   texto.appendChild(t);
   texto.appendChild(c);
   item.appendChild(img);

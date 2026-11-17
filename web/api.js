@@ -229,6 +229,7 @@
           curtida_em: Date.now() / 1000,
           estado: 'pronto'
         });
+        if (window.uruAoCurtir) { try { uruAoCurtir(vid); } catch (e) {} }
       }
     } else if (a.acao === 'tocou' && achada) {
       achada.tocada_em = Date.now() / 1000;
