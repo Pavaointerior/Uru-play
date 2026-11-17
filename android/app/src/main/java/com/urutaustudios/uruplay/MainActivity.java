@@ -56,7 +56,7 @@ public class MainActivity extends Activity {
         cfg.setSupportZoom(false);
         cfg.setBuiltInZoomControls(false);
         cfg.setDisplayZoomControls(false);
-        cfg.setTextZoom(100);
+        cfg.setTextZoom(70);
 
         setContentView(web);
 
