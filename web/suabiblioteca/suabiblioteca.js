@@ -4,6 +4,52 @@ var bibAba = 'curtidas', bibAberta = null;
 function bibAchar(id) { return bibDados.curtidas.filter(function (m) { return m.id === id; })[0]; }
 function bibCapa(m) { return m.miniatura; }
 
+var uruOff = {};      // ids que ja existem no aparelho
+var uruLote = null;   // download em andamento: {total, feitos, erros, msg}
+
+function uruAtualizarOff() {
+  uruOff = {};
+  if (!window.UruNativo) return;
+  try { JSON.parse(UruNativo.listar()).forEach(function (id) { uruOff[id] = 1; }); } catch (e) {}
+}
+function uruFaltam() {
+  return bibDados.curtidas.filter(function (m) { return !uruOff[m.id]; });
+}
+function uruRotulo() {
+  var b = document.getElementById('bib-baixar');
+  if (!b) return;
+  if (!window.UruNativo) { b.style.display = 'none'; return; }
+  b.style.display = '';
+  var n = uruFaltam().length;
+  b.textContent = uruLote ? 'Baixando ' + uruLote.feitos + '/' + uruLote.total
+                : n ? '⬇ Baixar offline (' + n + ')' : '✓ Tudo offline';
+}
+function uruBaixarTudo() {
+  if (uruLote) { alert('Já está baixando. Mantenha o app aberto.'); return; }
+  var falta = uruFaltam();
+  if (!falta.length) { alert('Todas as curtidas já estão offline.'); return; }
+  if (!confirm('Baixar ' + falta.length + ' música(s) para ouvir offline? Usa internet e espaço no aparelho. Mantenha o app aberto.')) return;
+  uruLote = { total: falta.length, feitos: 0, erros: 0, msg: '' };
+  falta.forEach(function (m) { try { UruNativo.baixar(m.id); } catch (e) {} });
+  uruRotulo();
+}
+/* O app chama isto quando termina cada download. */
+window.uruBaixou = function (id, ok, msg) {
+  if (ok) uruOff[id] = 1;
+  if (uruLote) {
+    uruLote.feitos++;
+    if (!ok) { uruLote.erros++; if (!uruLote.msg) uruLote.msg = msg || ''; }
+    if (uruLote.feitos >= uruLote.total) {
+      var l = uruLote;
+      uruLote = null;
+      bibDesenhar();
+      alert('Offline: ' + (l.total - l.erros) + ' baixada(s), ' + l.erros + ' falhou.' + (l.msg ? '\n\nErro: ' + l.msg : ''));
+      return;
+    }
+  }
+  bibDesenhar();
+};
+
 function bibApi(corpo) {
   return fetch('/biblioteca', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) })
     .then(function (r) { return r.json(); })
@@ -41,7 +87,7 @@ function bibItem(m, aoClicar, acoes) {
   t.textContent = m.titulo;
   var c = document.createElement('div');
   c.className = 'grade1-canal';
-  c.textContent = m.canal + (m.estado === 'baixando' ? ' · baixando...' : m.estado === 'erro' ? ' · falhou' : '');
+  c.textContent = m.canal + (uruOff[m.id] ? ' · offline' : '');
   texto.appendChild(t);
   texto.appendChild(c);
   item.appendChild(img);
@@ -75,6 +121,8 @@ function bibDesenhar() {
   document.getElementById('aba-curtidas').className = bibAba === 'curtidas' ? 'ativa' : '';
   document.getElementById('aba-playlists').className = bibAba === 'playlists' ? 'ativa' : '';
   if (window.atualizarCoracoes) atualizarCoracoes();
+  uruAtualizarOff();
+  uruRotulo();
   if (bibAba === 'curtidas') {
     if (!bibDados.curtidas.length) { bibAviso('Nenhuma música curtida ainda.'); return; }
     var ids = bibDados.curtidas.map(function (m) { return m.id; });
@@ -161,6 +209,7 @@ function mostrarBusca() {
 (function () {
   document.getElementById('aba-curtidas').onclick = function () { bibAba = 'curtidas'; bibDesenhar(); };
   document.getElementById('aba-playlists').onclick = function () { bibAba = 'playlists'; bibAberta = null; bibDesenhar(); };
+  document.getElementById('bib-baixar').onclick = uruBaixarTudo;
   setInterval(function () {
     if (bibDados.curtidas.some(function (m) { return m.estado === 'baixando'; })) bibCarregar();
   }, 3000);

@@ -119,7 +119,7 @@ function g2Acervo() {
   prontas.sort(function (a, b) { return (a.tocada_em || a.curtida_em || 0) - (b.tocada_em || b.curtida_em || 0); });
   var fila = g2Embaralhar(prontas.slice(0, 30)).map(function (x) {
     return { id: x.id, titulo: x.titulo, canal: x.canal, miniatura: x.miniatura,
-             capa: '/suabiblioteca/acervo/' + x.id + '.jpg', audio: '/suabiblioteca/acervo/' + x.id + '.m4a' };
+             capa: x.miniatura, audio: '/acervo/' + x.id + '.m4a' };
   });
   fila.forEach(function (m, i) {
     el.appendChild(g2Cartao(m, function () { tocarLocal(fila, i); }, m.capa, false));

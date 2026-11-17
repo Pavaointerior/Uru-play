@@ -27,6 +27,7 @@ import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -61,6 +62,7 @@ public class MainActivity extends Activity {
     private final ExecutorService fila = Executors.newSingleThreadExecutor();
     private final Set<String> pendentes = new HashSet<>();
     private volatile boolean ytPronto = false;
+    private volatile String erroInit = "";
 
     @Override
     protected void onCreate(Bundle estado) {
@@ -76,6 +78,7 @@ public class MainActivity extends Activity {
                 FFmpeg.getInstance().init(getApplication());
                 ytPronto = true;
             } catch (Exception e) {
+                erroInit = String.valueOf(e);
                 Log.e(TAG, "yt-dlp não iniciou", e);
             }
         });
@@ -205,6 +208,7 @@ public class MainActivity extends Activity {
 
     private void baixarAgora(String id) {
         boolean ok = false;
+        String erro = "";
         try {
             File alvo = new File(acervo, id + ".m4a");
             if (alvo.isFile() && alvo.length() > 0) {
@@ -218,14 +222,19 @@ public class MainActivity extends Activity {
                 req.addOption("-o", acervo.getAbsolutePath() + "/%(id)s.%(ext)s");
                 YoutubeDL.getInstance().execute(req);
                 ok = alvo.isFile() && alvo.length() > 0;
+                if (!ok) erro = "o arquivo m4a não foi criado";
+            } else {
+                erro = "yt-dlp não iniciou: " + erroInit;
             }
         } catch (Exception e) {
+            erro = String.valueOf(e.getMessage());
             Log.e(TAG, "download falhou: " + id, e);
         }
+        if (erro.length() > 500) erro = erro.substring(0, 500);
         synchronized (pendentes) {
             pendentes.remove(id);
         }
-        final String js = "window.uruBaixou && uruBaixou('" + id + "'," + ok + ")";
+        final String js = "window.uruBaixou && uruBaixou('" + id + "'," + ok + "," + JSONObject.quote(erro) + ")";
         runOnUiThread(() -> {
             if (web != null) web.evaluateJavascript(js, null);
         });
